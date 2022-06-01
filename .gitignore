@@ -101,3 +101,6 @@ scalastyle-output.xml
 # Flatten-pom
 .flattened-pom.xml
 flatter.pom
+
+# Any logs.
+logs/
