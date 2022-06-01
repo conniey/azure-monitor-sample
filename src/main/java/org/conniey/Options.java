@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
  * Command line options
  */
 public class Options {
-    @Parameter(names = {"--endpoint", "-e"}, description = "Endpoint for the workspace.", required = true)
+    @Parameter(names = {"--endpoint"}, description = "Endpoint for the workspace.", required = true)
     private String endpoint;
 
     @Parameter(names = {"--workspace", "-w"}, description = "Workspace Id.", required = true)
