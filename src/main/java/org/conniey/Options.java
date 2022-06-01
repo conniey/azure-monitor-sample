@@ -12,9 +12,6 @@ import java.time.format.DateTimeFormatter;
  * Command line options
  */
 public class Options {
-    @Parameter(names = {"--endpoint"}, description = "Endpoint for the workspace.", required = true)
-    private String endpoint;
-
     @Parameter(names = {"--workspace", "-w"}, description = "Workspace Id.", required = true)
     private String workspaceId;
 
@@ -59,14 +56,6 @@ public class Options {
 
     public void setWorkspaceId(String workspaceId) {
         this.workspaceId = workspaceId;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
     }
 
     /**
