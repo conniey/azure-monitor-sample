@@ -4,6 +4,7 @@ import com.azure.core.credential.TokenCredential;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.monitor.query.LogsQueryAsyncClient;
 import com.azure.monitor.query.LogsQueryClientBuilder;
+import com.azure.monitor.query.models.LogsQueryOptions;
 import com.azure.monitor.query.models.LogsQueryResult;
 import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
@@ -22,15 +23,21 @@ public class Program {
 
     public static void main(String[] args) {
         final Options options = new Options();
-        JCommander.newBuilder()
+        final JCommander builder = JCommander.newBuilder()
                 .addObject(options)
-                .build()
-                .parse(args);
+                .build();
+
+        try {
+            builder.parse(args);
+        } catch (Exception e) {
+            System.err.println("Error occurred parsing arguments. " + e.getMessage());
+            builder.usage();
+            return;
+        }
 
         final TokenCredential credential = new DefaultAzureCredentialBuilder().build();
 
         final LogsQueryAsyncClient queryClient = new LogsQueryClientBuilder()
-                .endpoint(options.getEndpoint())
                 .credential(credential)
                 .buildAsyncClient();
 
@@ -53,9 +60,7 @@ public class Program {
 
     private static Mono<Void> runQuery(LogsQueryAsyncClient client, String workspaceId, QueryTimeInterval interval,
             String query) {
-        final Mono<LogsQueryResult> logsQueryResultMono = client.queryWorkspace(workspaceId, query, interval);
-
-        return logsQueryResultMono.flatMapIterable(result -> result.getAllTables())
+        return client.queryWorkspace(workspaceId, query, interval).flatMapIterable(result -> result.getAllTables())
                 .handle((log, sink) -> {
 
                     for (LogsTableRow row : log.getRows()) {
