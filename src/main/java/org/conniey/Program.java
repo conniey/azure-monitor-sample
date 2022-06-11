@@ -19,12 +19,12 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class Program {
     private static final Logger LOGGER = LoggerFactory.getLogger(Program.class);
+    private static final Logger LOGS_LOGGER = LoggerFactory.getLogger("QueryLogger");
 
     public static void main(String[] args) {
         final Options options = new Options();
@@ -73,7 +73,7 @@ public class Program {
 
         final AtomicReference<OffsetDateTime> nextDate = new AtomicReference<>(interval.getStartTime());
 
-        return queryWorkspace(client, workspaceId, interval.getEndTime(), query, dateColumnName, nextDate)
+        return Mono.defer(() -> queryWorkspace(client, workspaceId, interval.getEndTime(), query, dateColumnName, nextDate))
                 .repeat(() -> nextDate.get() != null)
                 .then();
     }
@@ -86,7 +86,7 @@ public class Program {
         final OffsetDateTime currentStart = nextDate.getAndSet(null);
         final QueryTimeInterval queryTimeInterval = new QueryTimeInterval(currentStart, endDate);
 
-        LOGGER.info("Querying from {} to {}", queryTimeInterval.getEndTime(), queryTimeInterval.getEndTime());
+        LOGGER.info("Querying from {} to {}", queryTimeInterval.getStartTime(), queryTimeInterval.getEndTime());
 
         return client.queryWorkspaceWithResponse(workspaceId, query, queryTimeInterval,
                         new LogsQueryOptions().setAllowPartialErrors(true))
@@ -119,10 +119,10 @@ public class Program {
                         final String joined = cells.stream().map(cell -> cell.getValueAsString())
                                 .collect(Collectors.joining("\t"));
                         try {
-                            LOGGER.info(joined);
+                            LOGS_LOGGER.debug(joined);
                         } catch (Exception e) {
                             LOGGER.error("Error occurred in row {}", row.getRowIndex(), e);
-                            sink.error(new RuntimeException("Error occurred in row " + row.getRowIndex(), e));
+                            sink.error(new QueryException("", "Error occurred in row " + row.getRowIndex(), query));
                             return;
                         }
                     }
@@ -142,8 +142,16 @@ public class Program {
                     }
 
                     final OffsetDateTime valueAsDateTime = cell.get().getValueAsDateTime();
-                    nextDate.set(valueAsDateTime);
-                    sink.next(valueAsDateTime);
+
+                    if (valueAsDateTime.isAfter(endDate)) {
+                        LOGGER.info("Last result date {} is after the query end date {}.", valueAsDateTime, endDate);
+                        sink.complete();
+                    } else {
+                        LOGGER.info("Next query date is {}.", valueAsDateTime);
+
+                        nextDate.set(valueAsDateTime);
+                        sink.next(valueAsDateTime);
+                    }
                 });
     }
 }
