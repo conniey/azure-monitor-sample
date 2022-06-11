@@ -15,7 +15,7 @@ public class Options {
     @Parameter(names = {"--workspace", "-w"}, description = "Workspace Id.", required = true)
     private String workspaceId;
 
-    @Parameter(names ={"--query", "-q"}, description = "Query to pass into Azure Monitor.", required = true)
+    @Parameter(names ={"--query", "-q"}, description = "Query to pass into Azure Monitor. Please sort results by date ascending.", required = true)
     private String query;
 
     @Parameter(names = {"--start", "-s"}, description = "Start date and time in UTC for query (ie. 2011-12-03T10:15:30Z). If not set, last 24 hours is used.",
@@ -26,7 +26,7 @@ public class Options {
             converter = StringToDateConverter.class)
     private OffsetDateTime endDate;
 
-    @Parameter(names = {"--dateColumn"}, description = "Name of the date column in query. (ie. TimeGenerated)")
+    @Parameter(names = {"--dateColumn", "-dc"}, description = "Name of the date column in query. (ie. TimeGenerated)")
     private String dateColumnName;
 
     public OffsetDateTime getEndDate() {
