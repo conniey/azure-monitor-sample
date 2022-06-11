@@ -26,6 +26,9 @@ public class Options {
             converter = StringToDateConverter.class)
     private OffsetDateTime endDate;
 
+    @Parameter(names = {"--dateColumn"}, description = "Name of the date column in query. (ie. TimeGenerated)")
+    private String dateColumnName;
+
     public OffsetDateTime getEndDate() {
         return endDate;
     }
@@ -56,6 +59,14 @@ public class Options {
 
     public void setWorkspaceId(String workspaceId) {
         this.workspaceId = workspaceId;
+    }
+
+    public String getDateColumnName() {
+        return dateColumnName;
+    }
+
+    public void setDateColumnName(String dateColumnName) {
+        this.dateColumnName = dateColumnName;
     }
 
     /**
