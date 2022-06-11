@@ -20,11 +20,11 @@
         </encoder>
     </appender>
 
-    <logger name="org.conniey.Program" level="INFO">
+    <logger name="QueryLogger" level="DEBUG" additivity="false">
+        <appender-ref ref="RollingFile" />
     </logger>
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="Console"/>
-        <appender-ref ref="RollingFile"/>
     </root>
 </configuration>
